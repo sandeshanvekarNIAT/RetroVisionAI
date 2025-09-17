@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 import InputForm from '@/components/InputForm';
 import ResultsView from '@/components/ResultsView';
@@ -22,18 +23,15 @@ const Index = () => {
         description: "Breaking down the invention into core components",
       });
 
-      const deconstructResponse = await fetch('/api/deconstruct', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invention: formData.invention })
+      const deconstructResponse = await supabase.functions.invoke('deconstruct', {
+        body: { invention: formData.invention }
       });
 
-      if (!deconstructResponse.ok) {
-        const errorData = await deconstructResponse.json();
-        throw new Error(errorData.error || 'Failed to analyze invention');
+      if (deconstructResponse.error) {
+        throw new Error(deconstructResponse.error.message || 'Failed to analyze invention');
       }
 
-      const { decomposition } = await deconstructResponse.json();
+      const { decomposition } = deconstructResponse.data;
 
       // Step 2: Generate simulations
       toast({
@@ -41,24 +39,21 @@ const Index = () => {
         description: `Simulating ${formData.invention} in ${formData.era}`,
       });
 
-      const simulateResponse = await fetch('/api/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const simulateResponse = await supabase.functions.invoke('simulate', {
+        body: {
           invention: formData.invention,
           era: formData.era,
           creativity: formData.creativity,
           depth: formData.depth,
           decomposition
-        })
+        }
       });
 
-      if (!simulateResponse.ok) {
-        const errorData = await simulateResponse.json();
-        throw new Error(errorData.error || 'Failed to generate simulations');
+      if (simulateResponse.error) {
+        throw new Error(simulateResponse.error.message || 'Failed to generate simulations');
       }
 
-      const { simulations } = await simulateResponse.json();
+      const simulations = simulateResponse.data;
 
       // Set results and switch to results view
       setResults({
@@ -74,7 +69,7 @@ const Index = () => {
       
       toast({
         title: "Analysis complete!",
-        description: `Generated ${simulations.pathways?.length || 0} alternate invention pathways`,
+        description: `Generated ${simulations?.pathways?.length || 0} alternate invention pathways`,
       });
 
     } catch (error) {
@@ -98,23 +93,20 @@ const Index = () => {
         description: `Creating visual for ${pathway.title}`,
       });
 
-      const response = await fetch('/api/generate-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const response = await supabase.functions.invoke('generate-image', {
+        body: {
           prompt: pathway.visual_description || pathway.prototype_description,
           pathwayData: pathway,
           era: era,
           size: "1024x1024"
-        })
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate image');
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to generate image');
       }
 
-      const { images } = await response.json();
+      const { images } = response.data;
 
       toast({
         title: "Visualization ready!",
