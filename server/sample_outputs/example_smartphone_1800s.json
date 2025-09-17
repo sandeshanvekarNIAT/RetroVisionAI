@@ -1,0 +1,141 @@
+{
+  "example_test": "Smartphone in 1800s",
+  "decomposition": {
+    "name": "Smartphone",
+    "core_functions": [
+      "communication",
+      "computing", 
+      "display",
+      "power storage",
+      "data storage",
+      "user interface"
+    ],
+    "materials": [
+      "glass",
+      "metal conductors",
+      "battery chemicals",
+      "semiconductors",
+      "plastics",
+      "rare earth elements"
+    ],
+    "enabling_sciences": [
+      "electromagnetism",
+      "telecommunications theory",
+      "chemistry",
+      "optics",
+      "materials science",
+      "computer science"
+    ],
+    "subsystems": [
+      {
+        "name": "display",
+        "dependencies": ["glass", "optics", "electricity"],
+        "complexity": "high"
+      },
+      {
+        "name": "battery",
+        "dependencies": ["chemistry", "metallurgy"],
+        "complexity": "medium"
+      },
+      {
+        "name": "communication",
+        "dependencies": ["electromagnetic theory", "antennas"],
+        "complexity": "high"
+      }
+    ],
+    "cultural_drivers": [
+      "need for mobile communication",
+      "desire for information access",
+      "miniaturization trends",
+      "personal convenience"
+    ],
+    "min_tech_level": [
+      {
+        "technology": "electricity generation",
+        "notes": "Basic electrical power and storage required"
+      },
+      {
+        "technology": "precise manufacturing",
+        "notes": "Ability to create small, complex mechanisms"
+      },
+      {
+        "technology": "telecommunications",
+        "notes": "Understanding of signal transmission"
+      }
+    ]
+  },
+  "simulations": {
+    "pathways": [
+      {
+        "id": "telegraph_phone",
+        "title": "Telegraph Phone",
+        "narrative": "In 1825, London clockmaker William Harrison combined telegraph technology with Volta's battery principles to create the first 'Telegraph Phone.' Using a mechanical keyboard connected to telegraph lines, users could send coded messages displayed on a grid of indicator lamps. The device required hand-cranking for power and used brass components with wooden housing. Despite its bulk and complexity, it revolutionized urban communication.",
+        "technical_steps": [
+          "Adapt existing telegraph infrastructure",
+          "Create mechanical keyboard interface", 
+          "Design lamp-based display system",
+          "Integrate hand-crank power generation",
+          "Develop message encoding protocols"
+        ],
+        "prototype_description": "A mahogany and brass device the size of a writing desk, featuring a mechanical telegraph keyboard, a grid of oil-lamp indicators for message display, and a hand-crank for powering the electromagnets. Brass tubes and gear mechanisms visible through glass panels.",
+        "feasibility_score": 7,
+        "required_breakthroughs": [
+          "Miniaturized electromagnets",
+          "Reliable lamp switching mechanisms",
+          "Efficient hand-powered generators"
+        ],
+        "cultural_impact": "Would have accelerated urban business communications by decades, potentially preventing many financial panics caused by slow information flow.",
+        "visual_description": "Victorian-era brass and mahogany telegraph device with mechanical keyboard, lamp display grid, visible gears, and hand crank, technical blueprint style"
+      },
+      {
+        "id": "optical_communicator",
+        "title": "Optical Signal Communicator", 
+        "narrative": "Following Napoleon's optical telegraph success, inventor Marie Dubois created the 'Optical Communicator' in 1830 Paris. Using precisely angled mirrors and oil lamps, it could transmit coded light signals across the city. A mechanical calculator-like interface allowed message composition, while telescope attachments enabled signal reception. Though weather-dependent, it provided near-instantaneous communication across Paris.",
+        "technical_steps": [
+          "Network of mirror relay stations",
+          "Standardized light signal codes",
+          "Mechanical message composition device",
+          "Telescope-based signal detection",
+          "Weather protection mechanisms"
+        ],
+        "prototype_description": "An ornate brass and glass apparatus featuring adjustable mirrors, oil lamp projectors, a mechanical calculation-engine for message encoding, and telescopic receivers. Mounted on a rotating wooden base for directional signaling.",
+        "feasibility_score": 6,
+        "required_breakthroughs": [
+          "Precision mirror manufacturing",
+          "Standardized optical protocols", 
+          "Weather-resistant enclosures"
+        ],
+        "cultural_impact": "Could have connected European cities with rapid communication networks, accelerating political and economic integration by 50 years.",
+        "visual_description": "Ornate brass optical communication device with mirrors, oil lamps, telescopes, and mechanical calculation components, 1830s French engineering style"
+      },
+      {
+        "id": "pneumatic_messenger",
+        "title": "Steam-Powered Pneumatic Messenger",
+        "narrative": "Glasgow engineer Robert McKinnon combined steam engine technology with pneumatic tubes to create the 'Pneumatic Messenger' in 1835. Messages written on metal plates traveled through steam-pressurized tube networks. Central stations decoded and routed messages using mechanical switching systems. The network connected major buildings and required teams of operators but delivered messages in minutes across the city.",
+        "technical_steps": [
+          "Steam-powered pressure generation",
+          "Citywide pneumatic tube installation", 
+          "Mechanical message routing systems",
+          "Metal plate message encoding",
+          "Central switching stations"
+        ],
+        "prototype_description": "A steam-powered apparatus with brass pneumatic tubes, mechanical routing switches, message encoding wheels, and pressure gauges. Messages travel on brass plates through leather-sealed tubes powered by a compact steam engine.",
+        "feasibility_score": 8,
+        "required_breakthroughs": [
+          "Reliable tube sealing technology",
+          "Automated switching mechanisms",
+          "Compact steam engine design"
+        ],
+        "cultural_impact": "Would have created the world's first urban message network, fundamentally changing how cities operated and likely accelerating urbanization.",
+        "visual_description": "Steam-powered pneumatic tube communication system with brass tubes, mechanical switches, steam engine, and message encoding apparatus, 1830s industrial style"
+      }
+    ]
+  },
+  "generated_at": "2024-01-15T10:30:00Z",
+  "test_parameters": {
+    "invention": "Smartphone",
+    "era": "1800s", 
+    "creativity": 0.7,
+    "depth": 3
+  }
+}
