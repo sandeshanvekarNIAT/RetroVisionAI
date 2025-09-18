@@ -42,43 +42,11 @@ async function callGroqAPI(prompt: string, systemPrompt: string) {
   return result.choices[0].message.content;
 }
 
-// Together AI (has free tier)
-async function callTogetherAPI(prompt: string, systemPrompt: string) {
-  const togetherToken = Deno.env.get('TOGETHER_API_KEY');
-  if (!togetherToken) {
-    throw new Error('TOGETHER_API_KEY not configured');
-  }
-
-  const response = await fetch('https://api.together.xyz/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${togetherToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'meta-llama/Llama-2-7b-chat-hf',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 800,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Together API error: ${response.status}`);
-  }
-
-  const result = await response.json();
-  return result.choices[0].message.content;
-}
 
 async function callLLM(prompt: string, systemPrompt: string) {
   // Try different providers in order of preference
   const providers = [
-    { name: 'Groq', fn: callGroqAPI },
-    { name: 'Together', fn: callTogetherAPI }
+    { name: 'Groq', fn: callGroqAPI }
   ];
 
   let lastError;
