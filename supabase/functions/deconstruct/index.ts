@@ -17,7 +17,7 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string) {
   }
 
   const response = await fetch(
-    "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
+    "https://api-inference.huggingface.co/models/google/flan-t5-large",
     {
       headers: {
         Authorization: `Bearer ${hfToken}`,
@@ -25,7 +25,7 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string) {
       },
       method: "POST",
       body: JSON.stringify({
-        inputs: `${systemPrompt}\n\nUser: ${prompt}\nAssistant:`,
+        inputs: `${systemPrompt}\n\n${prompt}`,
         parameters: {
           max_new_tokens: 1000,
           temperature: 0.3,
@@ -36,7 +36,8 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string) {
   );
 
   if (!response.ok) {
-    throw new Error(`Hugging Face API error: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`Hugging Face API error: ${response.status} - ${errorText}`);
   }
 
   const result = await response.json();
@@ -57,7 +58,7 @@ async function callGroqAPI(prompt: string, systemPrompt: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama3-8b-8192', // Free model
+      model: 'llama-3.1-8b-instant', // Free model
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt }
@@ -68,7 +69,8 @@ async function callGroqAPI(prompt: string, systemPrompt: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`Groq API error: ${response.status} - ${errorText}`);
   }
 
   const result = await response.json();

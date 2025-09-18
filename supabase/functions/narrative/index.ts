@@ -24,7 +24,7 @@ async function callGroqAPI(prompt: string, systemPrompt: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama3-8b-8192', // Free model
+      model: 'llama-3.1-8b-instant', // Free model
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt }
@@ -35,7 +35,8 @@ async function callGroqAPI(prompt: string, systemPrompt: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`Groq API error: ${response.status} - ${errorText}`);
   }
 
   const result = await response.json();
