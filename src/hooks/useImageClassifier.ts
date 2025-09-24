@@ -19,12 +19,12 @@ export function useImageClassifier() {
     try {
       console.log('Loading image classification model...');
       
-      // Try WebGPU first for better performance
+      // Use a more reliable model that works well in browsers
       let model;
       try {
         model = await pipeline(
           'image-classification',
-          'google/vit-base-patch16-224',
+          'Xenova/vit-base-patch16-224',
           { device: 'webgpu' }
         );
         console.log('Model loaded with WebGPU acceleration');
@@ -32,7 +32,7 @@ export function useImageClassifier() {
         console.log('WebGPU not available, falling back to CPU');
         model = await pipeline(
           'image-classification',
-          'google/vit-base-patch16-224'
+          'Xenova/vit-base-patch16-224'
         );
         console.log('Model loaded on CPU');
       }
