@@ -7,7 +7,8 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, MicOff, Lightbulb, Clock, Cog, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Camera, Lightbulb, Clock, Cog, Sparkles } from 'lucide-react';
+import CameraCapture from './CameraCapture';
 import { useToast } from '@/hooks/use-toast';
 
 const EXAMPLE_INVENTIONS = [
@@ -39,6 +40,7 @@ export default function InputForm({ onGenerate, isLoading }) {
   const [depth, setDepth] = useState([3]);
   const [isRecording, setIsRecording] = useState(false);
   const [audioInput, setAudioInput] = useState('');
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   
   const { toast } = useToast();
   const fileInputRef = useRef(null);
@@ -138,6 +140,14 @@ export default function InputForm({ onGenerate, isLoading }) {
     }
   };
 
+  const handleCameraDetection = (detectedItem: string) => {
+    setInvention(detectedItem);
+    toast({
+      title: "Object Detected!",
+      description: `Auto-filled invention: ${detectedItem}`,
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -223,7 +233,7 @@ export default function InputForm({ onGenerate, isLoading }) {
               <Label htmlFor="invention" className="text-base font-medium">
                 Invention to Reverse-Engineer
               </Label>
-              <div className="flex gap-2">
+                <div className="flex gap-2">
                 <Input
                   id="invention"
                   placeholder="e.g., Smartphone, Steam Engine, Printing Press..."
@@ -234,11 +244,23 @@ export default function InputForm({ onGenerate, isLoading }) {
                 />
                 <Button
                   type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsCameraOpen(true)}
+                  disabled={isLoading}
+                  className="shrink-0"
+                  title="Capture photo to detect invention"
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
                   variant={isRecording ? "destructive" : "outline"}
                   size="icon"
                   onClick={handleVoiceInput}
                   disabled={isLoading}
                   className="shrink-0"
+                  title="Voice input"
                 >
                   {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </Button>
@@ -337,6 +359,13 @@ export default function InputForm({ onGenerate, isLoading }) {
           </form>
         </CardContent>
       </Card>
+
+      {/* Camera Capture Component */}
+      <CameraCapture 
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onDetection={handleCameraDetection}
+      />
     </div>
   );
 }
