@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, X, RotateCcw, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useImageClassifier } from '@/hooks/useImageClassifier';
+import { useTfImageClassifier } from '@/hooks/useTfImageClassifier';
 
 interface CameraCaptureProps {
   onDetection: (detectedItem: string) => void;
@@ -15,10 +15,11 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
-  const { initializeClassifier, classifyImage, isLoading: modelLoading } = useImageClassifier();
+  const { initializeClassifier, classifyImage, isLoading: modelLoading } = useTfImageClassifier();
 
   // Initialize the model when camera opens
   useEffect(() => {
@@ -51,25 +52,33 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
 
   const startCamera = async () => {
     try {
+      setIsVideoReady(false);
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'environment', // Use back camera on mobile
+        video: {
+          facingMode: { ideal: 'environment' },
           width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
+          height: { ideal: 720 },
+        },
+        audio: false,
       });
-      
+
       setStream(mediaStream);
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        const onLoaded = () => {
+          setIsVideoReady(true);
+          videoRef.current?.play().catch(() => {});
+        };
+        videoRef.current.onloadedmetadata = onLoaded;
+        if (videoRef.current.readyState >= 1) onLoaded();
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast({
         title: "Camera Access Denied",
         description: "Please allow camera access to use this feature.",
-        variant: "destructive"
+        variant: "destructive",
       });
       onClose();
     }
@@ -80,10 +89,22 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsVideoReady(false);
   };
 
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
+    if (!isVideoReady || videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
+      toast({
+        title: "Camera Not Ready",
+        description: "Please wait for the camera to initialize, then try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -95,11 +116,11 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Draw video frame to canvas
+    // Draw current video frame to canvas
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     // Convert to data URL
-    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.92);
     setCapturedImage(imageDataUrl);
   };
 
@@ -203,6 +224,7 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
                   playsInline
                   muted
                   className="w-full h-full object-cover"
+                  onLoadedMetadata={() => setIsVideoReady(true)}
                 />
               )}
             </div>
@@ -216,7 +238,7 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
                 <Button 
                   onClick={capturePhoto}
                   className="flex-1"
-                  disabled={!stream}
+                  disabled={!isVideoReady}
                 >
                   <Camera className="mr-2 h-4 w-4" />
                   Capture Photo
