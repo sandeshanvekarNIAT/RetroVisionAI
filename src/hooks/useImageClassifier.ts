@@ -19,32 +19,42 @@ export function useImageClassifier() {
     try {
       console.log('Loading image classification model...');
       
-      // Use a more reliable model that works well in browsers
-      let model;
-      try {
-        model = await pipeline(
-          'image-classification',
-          'Xenova/vit-base-patch16-224',
-          { device: 'webgpu' }
-        );
-        console.log('Model loaded with WebGPU acceleration');
-      } catch (webgpuError) {
-        console.log('WebGPU not available, falling back to CPU');
-        model = await pipeline(
-          'image-classification',
-          'Xenova/vit-base-patch16-224'
-        );
-        console.log('Model loaded on CPU');
-      }
-
+      // Use MobileNet which is smaller and loads faster in browsers
+      const model = await pipeline(
+        'image-classification',
+        'Xenova/mobilenet_v2_1.0_224',
+        { 
+          revision: 'main',
+          progress_callback: (progress) => {
+            console.log('Model loading progress:', progress);
+          }
+        }
+      );
+      
+      console.log('Model loaded successfully');
       setClassifier(model);
       setIsLoading(false);
       return model;
     } catch (error) {
       console.error('Error loading model:', error);
-      setError('Failed to load image classification model');
-      setIsLoading(false);
-      throw error;
+      
+      // Fallback to a different model if the first one fails
+      try {
+        console.log('Trying fallback model...');
+        const fallbackModel = await pipeline(
+          'image-classification',
+          'Xenova/vit-base-patch16-224'
+        );
+        console.log('Fallback model loaded successfully');
+        setClassifier(fallbackModel);
+        setIsLoading(false);
+        return fallbackModel;
+      } catch (fallbackError) {
+        console.error('Fallback model also failed:', fallbackError);
+        setError('Failed to load image classification model');
+        setIsLoading(false);
+        throw fallbackError;
+      }
     }
   };
 
