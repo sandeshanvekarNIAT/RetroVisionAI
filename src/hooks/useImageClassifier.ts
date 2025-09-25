@@ -17,35 +17,40 @@ export function useImageClassifier() {
     setError(null);
 
     try {
-      console.log('Loading image classification model...');
-      
-      // Use MobileNet which is smaller and loads faster in browsers
-      const model = await pipeline(
-        'image-classification',
-        'Xenova/mobilenet_v2_1.0_224',
-        { 
-          revision: 'main',
-          progress_callback: (progress) => {
-            console.log('Model loading progress:', progress);
-          }
-        }
-      );
-      
-      console.log('Model loaded successfully');
+      console.log('Loading image classification model (MobileNetV4)...');
+
+      let model;
+      try {
+        // Try WebGPU for best performance
+        model = await pipeline(
+          'image-classification',
+          'onnx-community/mobilenetv4_conv_small.e2400_r224_in1k',
+          { device: 'webgpu' }
+        );
+        console.log('Model loaded with WebGPU');
+      } catch (gpuErr) {
+        console.log('WebGPU unavailable, using CPU (WASM)');
+        model = await pipeline(
+          'image-classification',
+          'onnx-community/mobilenetv4_conv_small.e2400_r224_in1k'
+        );
+        console.log('Model loaded on CPU');
+      }
+
       setClassifier(model);
       setIsLoading(false);
       return model;
     } catch (error) {
       console.error('Error loading model:', error);
-      
-      // Fallback to a different model if the first one fails
+
+      // Fallback to ViT if MobileNetV4 fails
       try {
-        console.log('Trying fallback model...');
+        console.log('Trying fallback ViT model...');
         const fallbackModel = await pipeline(
           'image-classification',
           'Xenova/vit-base-patch16-224'
         );
-        console.log('Fallback model loaded successfully');
+        console.log('Fallback ViT model loaded');
         setClassifier(fallbackModel);
         setIsLoading(false);
         return fallbackModel;
