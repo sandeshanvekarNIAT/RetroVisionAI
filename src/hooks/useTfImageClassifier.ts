@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import mobilenet, { MobileNet } from '@tensorflow-models/mobilenet';
+import type { MobileNet } from '@tensorflow-models/mobilenet';
+import * as mobilenet from '@tensorflow-models/mobilenet';
 
 export function useTfImageClassifier() {
   const modelRef = useRef<MobileNet | null>(null);
