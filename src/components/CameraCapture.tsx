@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Camera, X, RotateCcw, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useTfImageClassifier } from '@/hooks/useTfImageClassifier';
+import { useYoloDetector } from '@/hooks/useYoloDetector';
 
 interface CameraCaptureProps {
   onDetection: (detectedItem: string) => void;
@@ -19,21 +20,21 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
-  const { initializeClassifier, classifyImage, isLoading: modelLoading } = useTfImageClassifier();
+  const { initializeDetector, detectObjects, isLoading: modelLoading, loadingProgress } = useYoloDetector();
 
   // Initialize the model when camera opens
   useEffect(() => {
     if (isOpen) {
-      initializeClassifier().catch(error => {
-        console.error('Failed to initialize classifier:', error);
+      initializeDetector().catch(error => {
+        console.error('Failed to initialize YOLO detector:', error);
         toast({
           title: "Model Loading Failed",
-          description: "Could not load image recognition model. Please try again.",
+          description: "Could not load YOLOv8 detection model. Please try again.",
           variant: "destructive"
         });
       });
     }
-  }, [isOpen, initializeClassifier, toast]);
+  }, [isOpen, initializeDetector, toast]);
 
   // Start camera stream
   useEffect(() => {
@@ -137,26 +138,36 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
     setIsProcessing(true);
 
     try {
-      console.log('Processing image with classifier...');
+      console.log('Processing image with YOLOv8 detector...');
       
       // Convert data URL to image element
       const img = new Image();
       img.onload = async () => {
         try {
-          const result = await classifyImage(img);
+          const detections = await detectObjects(img);
           
-          toast({
-            title: "Object Detected!",
-            description: `Detected: ${result.label} (${(result.confidence * 100).toFixed(1)}% confidence)`,
-          });
+          if (detections && detections.length > 0) {
+            const topDetection = detections[0];
+            
+            toast({
+              title: "Object Detected!",
+              description: `Detected: ${topDetection.class} (${(topDetection.confidence * 100).toFixed(1)}% confidence)`,
+            });
 
-          onDetection(result.label);
-          handleClose();
+            onDetection(topDetection.class);
+            handleClose();
+          } else {
+            toast({
+              title: "No Objects Detected",
+              description: "Could not detect any objects in the image. Please try again with a clearer view.",
+              variant: "destructive"
+            });
+          }
         } catch (error) {
           console.error('Error processing image:', error);
           toast({
             title: "Detection Failed",
-            description: "Could not identify the object in the image. Please try again.",
+            description: "Could not identify objects in the image. Please try again.",
             variant: "destructive"
           });
         } finally {
@@ -218,19 +229,37 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                  onLoadedMetadata={() => setIsVideoReady(true)}
-                />
+                <>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    onLoadedMetadata={() => setIsVideoReady(true)}
+                  />
+                  {isVideoReady && !modelLoading && (
+                    <div className="absolute bottom-2 left-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded text-center">
+                      YOLOv8 can detect 80 objects: people, vehicles, animals, phones, laptops, and more
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
             {/* Hidden canvas for image processing */}
             <canvas ref={canvasRef} className="hidden" />
+
+            {/* Model Loading Progress */}
+            {modelLoading && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Loading YOLOv8 Model...</span>
+                  <span className="text-muted-foreground">{loadingProgress}%</span>
+                </div>
+                <Progress value={loadingProgress} className="w-full" />
+              </div>
+            )}
 
             {/* Control Buttons */}
             <div className="flex gap-2">
@@ -238,10 +267,10 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
                 <Button 
                   onClick={capturePhoto}
                   className="flex-1"
-                  disabled={!isVideoReady}
+                  disabled={!isVideoReady || modelLoading}
                 >
                   <Camera className="mr-2 h-4 w-4" />
-                  Capture Photo
+                  {modelLoading ? 'Loading Model...' : 'Capture Photo'}
                 </Button>
               ) : (
                 <>
@@ -261,7 +290,7 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
                     {isProcessing ? (
                       <>
                         <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Processing...
+                        Detecting...
                       </>
                     ) : (
                       <>
@@ -273,12 +302,6 @@ export default function CameraCapture({ onDetection, isOpen, onClose }: CameraCa
                 </>
               )}
             </div>
-
-            {modelLoading && (
-              <p className="text-sm text-muted-foreground text-center">
-                Loading AI model for object detection...
-              </p>
-            )}
           </div>
         </CardContent>
       </Card>
