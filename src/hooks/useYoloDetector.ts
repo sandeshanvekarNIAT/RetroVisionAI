@@ -39,8 +39,8 @@ export function useYoloDetector() {
       
       setLoadingProgress(20);
       
-      // Load YOLOv8n model from Hugging Face
-      const modelUrl = 'https://huggingface.co/onnx-community/yolov8n/resolve/main/model.onnx';
+      // Load YOLOv8n model from publicly accessible Hugging Face repository
+      const modelUrl = 'https://huggingface.co/SpotLab/YOLOv8Detection/resolve/3005c6751fb19cdeb6b10c066185908faf66a097/yolov8n.onnx';
       
       setLoadingProgress(40);
       
